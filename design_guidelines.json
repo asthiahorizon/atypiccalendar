@@ -1,0 +1,206 @@
+{
+  "theme_and_archetype": {
+    "domain": "Mental Health & Productivity",
+    "theme": "Dark Mode Premium",
+    "archetype": "Archetype 5 (Jewel & Luxury) mixed with Archetype 1 (Organic & Earthy)",
+    "vibe": "Calming, fluid, non-stressful, premium, soft, minimalist. A safe harbor for your nervous system."
+  },
+  "colors": {
+    "background": {
+      "base": "#0B0E14",
+      "surface": "#171821",
+      "surface_elevated": "#22232F",
+      "glass": "rgba(23, 24, 33, 0.65)"
+    },
+    "energy": {
+      "cognitive": {
+        "primary": "#A288F8",
+        "secondary": "rgba(162, 136, 248, 0.15)",
+        "gradient": ["#8B93FF", "#A288F8"]
+      },
+      "social": {
+        "primary": "#FFB07F",
+        "secondary": "rgba(255, 176, 127, 0.15)",
+        "gradient": ["#FF9A62", "#FFB07F"]
+      },
+      "sensory": {
+        "primary": "#4DD0E1",
+        "secondary": "rgba(77, 208, 225, 0.15)",
+        "gradient": ["#26C6DA", "#4DD0E1"]
+      }
+    },
+    "text": {
+      "primary": "#F8F9FA",
+      "secondary": "#A0A5B1",
+      "tertiary": "#6B7280"
+    },
+    "border": {
+      "subtle": "rgba(255, 255, 255, 0.05)",
+      "medium": "rgba(255, 255, 255, 0.1)"
+    },
+    "states": {
+      "success": "#34D399",
+      "warning": "#FBBF24",
+      "danger_soft": "#F87171"
+    }
+  },
+  "typography": {
+    "families": {
+      "heading": "Outfit, system-ui",
+      "body": "Manrope, system-ui"
+    },
+    "sizes": {
+      "h1": { "fontSize": 36, "lineHeight": 44, "letterSpacing": -1.5, "fontWeight": "700" },
+      "h2": { "fontSize": 28, "lineHeight": 36, "letterSpacing": -1, "fontWeight": "600" },
+      "h3": { "fontSize": 22, "lineHeight": 30, "letterSpacing": -0.5, "fontWeight": "600" },
+      "h4": { "fontSize": 18, "lineHeight": 26, "letterSpacing": -0.2, "fontWeight": "600" },
+      "bodyLg": { "fontSize": 16, "lineHeight": 24, "letterSpacing": 0, "fontWeight": "400" },
+      "body": { "fontSize": 15, "lineHeight": 22, "letterSpacing": 0.2, "fontWeight": "400" },
+      "bodySm": { "fontSize": 13, "lineHeight": 18, "letterSpacing": 0.3, "fontWeight": "500" },
+      "overline": { "fontSize": 11, "lineHeight": 16, "letterSpacing": 1.5, "fontWeight": "700", "textTransform": "uppercase" }
+    }
+  },
+  "layout_spacing": {
+    "scale": {
+      "xs": 4,
+      "sm": 8,
+      "md": 12,
+      "lg": 16,
+      "xl": 24,
+      "2xl": 32,
+      "3xl": 48,
+      "4xl": 64
+    },
+    "border_radius": {
+      "sm": 12,
+      "md": 16,
+      "lg": 24,
+      "xl": 32,
+      "pill": 9999
+    },
+    "screen_padding": 24
+  },
+  "components": {
+    "buttons": {
+      "primary": {
+        "backgroundColor": "#F8F9FA",
+        "color": "#0B0E14",
+        "borderRadius": 9999,
+        "paddingVertical": 16,
+        "paddingHorizontal": 32,
+        "alignItems": "center",
+        "justifyContent": "center",
+        "fontWeight": "600"
+      },
+      "secondary": {
+        "backgroundColor": "rgba(255, 255, 255, 0.05)",
+        "borderWidth": 1,
+        "borderColor": "rgba(255, 255, 255, 0.1)",
+        "color": "#F8F9FA",
+        "borderRadius": 9999,
+        "paddingVertical": 16,
+        "paddingHorizontal": 32
+      }
+    },
+    "cards": {
+      "surface": {
+        "backgroundColor": "#171821",
+        "borderRadius": 24,
+        "padding": 24,
+        "borderWidth": 1,
+        "borderColor": "rgba(255, 255, 255, 0.03)"
+      },
+      "glass": {
+        "backgroundColor": "rgba(23, 24, 33, 0.65)",
+        "borderRadius": 24,
+        "padding": 24,
+        "borderWidth": 1,
+        "borderColor": "rgba(255, 255, 255, 0.08)",
+        "shadowColor": "#000",
+        "shadowOffset": { "width": 0, "height": 10 },
+        "shadowOpacity": 0.2,
+        "shadowRadius": 20
+      }
+    },
+    "energy_donuts": {
+      "size": { "large": 120, "medium": 80, "small": 40 },
+      "strokeWidth": { "large": 12, "medium": 8, "small": 4 },
+      "lineCap": "round"
+    },
+    "bottom_tabs": {
+      "backgroundColor": "rgba(11, 14, 20, 0.85)",
+      "borderTopWidth": 1,
+      "borderTopColor": "rgba(255, 255, 255, 0.05)",
+      "height": 90,
+      "paddingBottom": 24,
+      "paddingTop": 12
+    }
+  },
+  "motion_and_interactions": {
+    "transitions": {
+      "slow": 500,
+      "medium": 300,
+      "fast": 150
+    },
+    "easing": "Easing.bezier(0.25, 1, 0.5, 1)",
+    "activeOpacity": 0.7,
+    "animations": {
+      "donuts": "Animate dashoffset using react-native-reanimated with spring physics for a soft, fluid filling motion.",
+      "modals": "Slide up softly from bottom with background blur fade-in.",
+      "navigation": "Fade through cross-dissolve to maintain calm, avoid jarring horizontal slides."
+    }
+  },
+  "icons_and_assets": {
+    "library": "lucide-react-native",
+    "strokeWidth": 1.5,
+    "size": {
+      "sm": 16,
+      "md": 20,
+      "lg": 24,
+      "xl": 32
+    }
+  },
+  "media_urls": {
+    "onboarding_backgrounds": [
+      {
+        "url": "https://images.unsplash.com/photo-1777703304105-9977e87124a3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwxfHxkYXJrJTIwYWJzdHJhY3QlMjBzbW9vdGglMjBzaGFwZXN8ZW58MHx8fHwxNzc4MzU1MTM2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract smooth dark shapes - Use for Onboarding Screen 1 (Cognitive Focus)"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1777789062450-d2c57cb8b15b?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwyfHxkYXJrJTIwYWJzdHJhY3QlMjBzbW9vdGglMjBzaGFwZXN8ZW58MHx8fHwxNzc4MzU1MTM2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract glowing waves - Use for Onboarding Screen 2 (Energy Flow)"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1777789062043-321bf020c6be?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjd8MHwxfHNlYXJjaHwzfHxkYXJrJTIwYWJzdHJhY3QlMjBzbW9vdGglMjBzaGFwZXN8ZW58MHx8fHwxNzc4MzU1MTM2fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract blue light curves - Use for Onboarding Screen 3 (Mental Clarity)"
+      }
+    ]
+  },
+  "instructions_to_main_agent": {
+    "tech_stack": [
+      "React Native",
+      "Expo",
+      "react-native-svg (for the donuts)",
+      "react-native-reanimated (for animations)",
+      "lucide-react-native (for icons, strokeWidth 1.5)"
+    ],
+    "styling_rules": [
+      "DO NOT USE Tailwind CSS. Use React Native StyleSheet.",
+      "Use explicit layout: flexDirection, alignItems, justifyContent.",
+      "Use 24px screen padding on all main views to maintain breathing room.",
+      "Card elements must have a very subtle border (rgba 255,255,255, 0.03) to lift them off the deep background.",
+      "Never use pure black (#000000) for backgrounds. Stick to the #0B0E14 scale."
+    ],
+    "component_instructions": [
+      "Energy Donuts: Use react-native-svg <Circle>. Calculate circumference = 2 * Math.PI * radius. Use strokeDasharray and strokeDashoffset. Animate strokeDashoffset with react-native-reanimated.",
+      "Templates: Create pill-shaped horizontal scrolling lists or bento-grid blocks for tasks like 'Marche', 'Sieste', 'Travail profond'.",
+      "Event Creation Modal: Should feel soft. No jarring full-screen takeovers. Consider a highly rounded bottom sheet.",
+      "Smart Suggestions: Style them as 'Glass' cards. They are gentle nudges, not alerts.",
+      "Fatigue Score: Visualize softly without alarming colors. Moderate/High should not use harsh red, but rather soft burnt orange or muted purple."
+    ],
+    "accessibility_and_testing": [
+      "All interactive elements (TouchableOpacity, TextInput) MUST have testID prop mirroring data-testid convention (e.g. testID='create-event-button').",
+      "Ensure color contrasts meet accessibility standards even in dark mode."
+    ]
+  }
+}
