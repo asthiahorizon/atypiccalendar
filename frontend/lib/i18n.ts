@@ -141,6 +141,14 @@ type Dict = {
   delete_event_body: string;
   delete: string;
   language_name: string;
+
+  edit_event: string;
+  save_changes: string;
+  delete_event_btn: string;
+
+  notif_toggle_desc: string;
+  notif_perm_denied_t: string;
+  notif_perm_denied_m: string;
 };
 
 const en: Dict = {
@@ -268,6 +276,12 @@ const en: Dict = {
   delete_event_body: "This action is irreversible.",
   delete: "Delete",
   language_name: "English",
+  edit_event: "Edit event",
+  save_changes: "Save changes",
+  delete_event_btn: "Delete event",
+  notif_toggle_desc: "Daily morning reminder + 15 min before each event.",
+  notif_perm_denied_t: "Permission denied",
+  notif_perm_denied_m: "Allow notifications in your system settings to enable reminders.",
 };
 
 const fr: Dict = {
@@ -394,6 +408,12 @@ const fr: Dict = {
   delete_event_body: "Cette action est irréversible.",
   delete: "Supprimer",
   language_name: "Français",
+  edit_event: "Modifier l'événement",
+  save_changes: "Enregistrer",
+  delete_event_btn: "Supprimer l'événement",
+  notif_toggle_desc: "Rappel matinal + 15 min avant chaque événement.",
+  notif_perm_denied_t: "Permission refusée",
+  notif_perm_denied_m: "Autorisez les notifications dans les paramètres système pour activer les rappels.",
 };
 
 const it: Dict = {
@@ -520,6 +540,12 @@ const it: Dict = {
   delete_event_body: "Questa azione è irreversibile.",
   delete: "Elimina",
   language_name: "Italiano",
+  edit_event: "Modifica evento",
+  save_changes: "Salva modifiche",
+  delete_event_btn: "Elimina evento",
+  notif_toggle_desc: "Promemoria mattutino + 15 min prima di ogni evento.",
+  notif_perm_denied_t: "Permesso negato",
+  notif_perm_denied_m: "Autorizza le notifiche nelle impostazioni di sistema per attivare i promemoria.",
 };
 
 const de: Dict = {
@@ -647,6 +673,12 @@ const de: Dict = {
   delete_event_body: "Diese Aktion ist unumkehrbar.",
   delete: "Löschen",
   language_name: "Deutsch",
+  edit_event: "Ereignis bearbeiten",
+  save_changes: "Änderungen speichern",
+  delete_event_btn: "Ereignis löschen",
+  notif_toggle_desc: "Morgendliche Erinnerung + 15 Min vor jedem Ereignis.",
+  notif_perm_denied_t: "Erlaubnis verweigert",
+  notif_perm_denied_m: "Erlaube Benachrichtigungen in den Systemeinstellungen, um Erinnerungen zu aktivieren.",
 };
 
 const dictionaries: Record<Lang, Dict> = { en, fr, it, de };

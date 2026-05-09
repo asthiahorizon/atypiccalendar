@@ -1,0 +1,40 @@
+{
+  "summary": "Iteration 3 — full backend regression (12/12 pytest PASS) + frontend test of edit-event flow, delete-event button, settings cleanup, and notifications toggle. All checks PASS except one: tapping 'delete-event-btn' on the WEB preview does NOT actually remove the event because react-native-web's Alert.alert with multi-button (cancel + destructive) does not render a confirmation dialog on web — the destructive onPress callback is never invoked. This is a web-only limitation; flow should still work on native iOS/Android.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Delete event from edit modal (web preview)",
+        "issue": "Tapping [data-testid=\"delete-event-btn\"] triggers Alert.alert with [Cancel, Delete(destructive)]. On react-native-web, multi-button Alert.alert does not show a window.confirm/native dialog and the destructive onPress is never invoked (Playwright captured zero dialog events). Event is NOT deleted on web. Likely works on iOS/Android. Recommend wrapping the confirm in Platform.OS === 'web' ? window.confirm(...) : Alert.alert(...) so web users can also delete via the modal.",
+        "affected_testIDs": ["delete-event-btn"]
+      }
+    ],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "global", "issue": "Console warnings (non-blocking, pre-existing): 'shadow*' deprecated -> use boxShadow; props.pointerEvents deprecated -> style.pointerEvents; Invalid DOM property transform-origin -> transformOrigin."},
+      {"component": "expo-notifications (web)", "issue": "Console warning: '[expo-notifications] Listening to push token changes is not yet fully supported on web. Adding a listener will have no effect.' Non-blocking; web fallbacks in lib/notifications.ts already short-circuit scheduling on web."}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_atypic.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "Fix delete confirmation on web: in event/new.tsx onDelete, branch on Platform.OS === 'web' to use window.confirm(t.delete_event_body) (or a custom modal) instead of Alert.alert with multi-button. The native path (Alert.alert) is fine.",
+    "Optional: same Platform.OS=='web' branch could be applied to other Alert.alert multi-button usages (e.g. capacity-block alert) — but those are single-button so they already work."
+  ],
+  "critical_code_review_comments": [
+    "lib/notifications.ts: scheduleEventReminder relies on global `lang` captured at i18n module init — same caveat noted in iteration 2. Fine for MVP.",
+    "event/new.tsx onSubmit (edit branch): correctly cancels old reminder via AsyncStorage key and schedules new one. Good.",
+    "settings.tsx: ToggleRow disables Switch while loading — good UX. ensurePermission returns true on web (no popup), so the switch toggles correctly without crashing.",
+    "server.py PUT /api/events/{id}: only updates non-None fields and returns the updated doc with _id excluded — clean."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100% (12/12)", "frontend": "~93% (14/15 — delete on web fails)"},
+  "seed_data_creation": "Created and then API-deleted one TEST_Edit/TEST_Edited event on 2026-05-09. No leftover test data.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Only retest the delete-on-web flow once main agent adds a Platform.OS==='web' branch using window.confirm. Backend is fully green. Other frontend behaviors (create modal header 'New event', save text 'Add event', edit pre-fill, header 'Edit event', save text 'Save changes', delete button visible only in edit mode, settings: notifications toggle, no Bientôt, no Reset data, all rows present, web toggle no-crash) were all PASS.",
+  "rca_of_issue": "RCA — react-native-web's Alert.alert implementation does not render a multi-button modal/confirm. When called with [{text:'Cancel',style:'cancel'},{text:'Delete',style:'destructive',onPress:fn}], it either calls window.alert(title) (no callback) or silently no-ops, so the destructive onPress (which calls apiClient.deleteEvent) never runs. Verified by registering a Playwright dialog handler — zero dialogs were observed on click. Mitigation: branch onDelete on Platform.OS to use window.confirm for web."
+}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -23,20 +23,31 @@ import {
   Check,
   Plus,
   Minus,
+  Trash2,
 } from "lucide-react-native";
 import { theme } from "../../lib/theme";
-import { apiClient, EventType } from "../../lib/api";
+import { apiClient, EventType, AtypicEvent } from "../../lib/api";
 import { fromISODate, formatDateLong } from "../../lib/dates";
 import { t, lang } from "../../lib/i18n";
+import {
+  scheduleEventReminder,
+  cancelEventReminder,
+} from "../../lib/notifications";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const STEP = 5;
 const MAX = 75;
 
-export default function NewEventScreen() {
-  const router = useRouter();
-  const params = useLocalSearchParams<{ date?: string }>();
-  const date = params.date || new Date().toISOString().slice(0, 10);
+const reminderKey = (id: string) => `atypic.reminder.${id}`;
 
+export default function EventFormScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ date?: string; id?: string }>();
+  const isEdit = !!params.id;
+  const editId = params.id as string | undefined;
+  const initialDate = params.date || new Date().toISOString().slice(0, 10);
+
+  const [date, setDate] = useState(initialDate);
   const [title, setTitle] = useState("");
   const [time, setTime] = useState("09:00");
   const [duration, setDuration] = useState(60);
@@ -45,6 +56,31 @@ export default function NewEventScreen() {
   const [socMag, setSocMag] = useState(0);
   const [senMag, setSenMag] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEdit);
+
+  // Load event when editing
+  useEffect(() => {
+    if (!isEdit || !editId) return;
+    (async () => {
+      try {
+        const all = await apiClient.eventsByDate(initialDate);
+        const ev = all.find((e: AtypicEvent) => e.id === editId);
+        if (ev) {
+          setDate(ev.date);
+          setTitle(ev.title);
+          setTime(ev.start_time);
+          setDuration(ev.duration_minutes);
+          setType(ev.type);
+          setCogMag(Math.abs(ev.cognitive_impact));
+          setSocMag(Math.abs(ev.social_impact));
+          setSenMag(Math.abs(ev.sensory_impact));
+        }
+      } catch (e) {
+        console.warn("load event failed", e);
+      }
+      setLoading(false);
+    })();
+  }, [isEdit, editId, initialDate]);
 
   const sign = type === "task" ? -1 : 1;
 
@@ -71,18 +107,58 @@ export default function NewEventScreen() {
     };
 
     try {
-      const check = await apiClient.checkEvent(payload as any);
-      if (check.blocked) {
-        setSaving(false);
-        Alert.alert(t.err_capacity_t, t.err_capacity_m, [{ text: t.understood }]);
-        return;
+      if (isEdit && editId) {
+        await apiClient.updateEvent(editId, payload);
+        // Reschedule reminder
+        const oldRid = await AsyncStorage.getItem(reminderKey(editId));
+        if (oldRid) await cancelEventReminder(oldRid);
+        const newRid = await scheduleEventReminder({
+          title: payload.title,
+          date: payload.date,
+          time: payload.start_time,
+        });
+        if (newRid) await AsyncStorage.setItem(reminderKey(editId), newRid);
+        else await AsyncStorage.removeItem(reminderKey(editId));
+      } else {
+        const check = await apiClient.checkEvent(payload as any);
+        if (check.blocked) {
+          setSaving(false);
+          Alert.alert(t.err_capacity_t, t.err_capacity_m, [
+            { text: t.understood },
+          ]);
+          return;
+        }
+        const created = await apiClient.createEvent(payload as any);
+        const rid = await scheduleEventReminder({
+          title: created.title,
+          date: created.date,
+          time: created.start_time,
+        });
+        if (rid) await AsyncStorage.setItem(reminderKey(created.id), rid);
       }
-      await apiClient.createEvent(payload as any);
       router.back();
     } catch (e: any) {
       setSaving(false);
       Alert.alert(t.err_cant_add, e?.message || t.err_unexpected);
     }
+  };
+
+  const onDelete = () => {
+    if (!editId) return;
+    Alert.alert(t.delete_event_title, t.delete_event_body, [
+      { text: t.cancel, style: "cancel" },
+      {
+        text: t.delete,
+        style: "destructive",
+        onPress: async () => {
+          const rid = await AsyncStorage.getItem(reminderKey(editId));
+          if (rid) await cancelEventReminder(rid);
+          await AsyncStorage.removeItem(reminderKey(editId));
+          await apiClient.deleteEvent(editId);
+          router.back();
+        },
+      },
+    ]);
   };
 
   const dateObj = useMemo(() => fromISODate(date), [date]);
@@ -102,140 +178,155 @@ export default function NewEventScreen() {
           >
             <X size={20} color={theme.colors.text} strokeWidth={1.7} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{t.new_event}</Text>
+          <Text style={styles.headerTitle}>
+            {isEdit ? t.edit_event : t.new_event}
+          </Text>
           <View style={{ width: 40 }} />
         </View>
 
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Date */}
-          <View style={styles.dateBlock}>
-            <CalendarIcon
-              size={14}
-              color={theme.colors.textSecondary}
-              strokeWidth={1.7}
-            />
-            <Text style={styles.dateText}>{dateText}</Text>
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: "center" }}>
+            <ActivityIndicator color={theme.colors.text} />
           </View>
-
-          {/* Title */}
-          <View>
-            <Text style={styles.label}>{t.field_title}</Text>
-            <TextInput
-              value={title}
-              onChangeText={setTitle}
-              placeholder={t.field_title_placeholder}
-              placeholderTextColor={theme.colors.textTertiary}
-              style={styles.input}
-              testID="event-title-input"
-            />
-          </View>
-
-          {/* Type */}
-          <View>
-            <Text style={styles.label}>{t.field_type}</Text>
-            <View style={styles.typeRow}>
-              <TypePill
-                active={type === "task"}
-                label={t.type_task}
-                desc={t.type_task_desc}
-                color={theme.colors.cognitive}
-                onPress={() => setType("task")}
-                testID="type-task"
+        ) : (
+          <ScrollView
+            style={{ flex: 1 }}
+            contentContainerStyle={styles.scroll}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.dateBlock}>
+              <CalendarIcon
+                size={14}
+                color={theme.colors.textSecondary}
+                strokeWidth={1.7}
               />
-              <TypePill
-                active={type === "resource"}
-                label={t.type_resource}
-                desc={t.type_resource_desc}
-                color={theme.colors.success}
-                onPress={() => setType("resource")}
-                testID="type-resource"
-              />
+              <Text style={styles.dateText}>{dateText}</Text>
             </View>
-          </View>
 
-          {/* Time + Duration */}
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>{t.field_time}</Text>
+            <View>
+              <Text style={styles.label}>{t.field_title}</Text>
               <TextInput
-                value={time}
-                onChangeText={setTime}
-                placeholder="09:00"
+                value={title}
+                onChangeText={setTitle}
+                placeholder={t.field_title_placeholder}
                 placeholderTextColor={theme.colors.textTertiary}
-                keyboardType="numbers-and-punctuation"
                 style={styles.input}
-                testID="event-time-input"
+                testID="event-title-input"
               />
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>{t.field_duration}</Text>
-              <View style={styles.stepper}>
-                <TouchableOpacity
-                  style={styles.stepBtn}
-                  onPress={() => setDuration(Math.max(15, duration - 15))}
-                  testID="duration-minus"
-                >
-                  <Minus size={16} color={theme.colors.text} strokeWidth={2} />
-                </TouchableOpacity>
-                <Text style={styles.stepText}>
-                  {duration} {t.duration_unit}
-                </Text>
-                <TouchableOpacity
-                  style={styles.stepBtn}
-                  onPress={() => setDuration(Math.min(480, duration + 15))}
-                  testID="duration-plus"
-                >
-                  <Plus size={16} color={theme.colors.text} strokeWidth={2} />
-                </TouchableOpacity>
+
+            <View>
+              <Text style={styles.label}>{t.field_type}</Text>
+              <View style={styles.typeRow}>
+                <TypePill
+                  active={type === "task"}
+                  label={t.type_task}
+                  desc={t.type_task_desc}
+                  color={theme.colors.cognitive}
+                  onPress={() => setType("task")}
+                  testID="type-task"
+                />
+                <TypePill
+                  active={type === "resource"}
+                  label={t.type_resource}
+                  desc={t.type_resource_desc}
+                  color={theme.colors.success}
+                  onPress={() => setType("resource")}
+                  testID="type-resource"
+                />
               </View>
             </View>
-          </View>
 
-          {/* Impacts */}
-          <View>
-            <Text style={styles.label}>{t.field_impact}</Text>
-            <Text style={styles.sub}>
-              {type === "task"
-                ? t.field_impact_sub_task
-                : t.field_impact_sub_resource}
-            </Text>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>{t.field_time}</Text>
+                <TextInput
+                  value={time}
+                  onChangeText={setTime}
+                  placeholder="09:00"
+                  placeholderTextColor={theme.colors.textTertiary}
+                  keyboardType="numbers-and-punctuation"
+                  style={styles.input}
+                  testID="event-time-input"
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>{t.field_duration}</Text>
+                <View style={styles.stepper}>
+                  <TouchableOpacity
+                    style={styles.stepBtn}
+                    onPress={() => setDuration(Math.max(15, duration - 15))}
+                    testID="duration-minus"
+                  >
+                    <Minus size={16} color={theme.colors.text} strokeWidth={2} />
+                  </TouchableOpacity>
+                  <Text style={styles.stepText}>
+                    {duration} {t.duration_unit}
+                  </Text>
+                  <TouchableOpacity
+                    style={styles.stepBtn}
+                    onPress={() => setDuration(Math.min(480, duration + 15))}
+                    testID="duration-plus"
+                  >
+                    <Plus size={16} color={theme.colors.text} strokeWidth={2} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
 
-            <ImpactSlider
-              Icon={Brain}
-              label={t.donut_cog}
-              mag={cogMag}
-              onChange={setCogMag}
-              color={theme.colors.cognitive}
-              sign={sign}
-              testID="impact-cognitive"
-            />
-            <ImpactSlider
-              Icon={Users}
-              label={t.donut_soc}
-              mag={socMag}
-              onChange={setSocMag}
-              color={theme.colors.social}
-              sign={sign}
-              testID="impact-social"
-            />
-            <ImpactSlider
-              Icon={Zap}
-              label={t.donut_sen}
-              mag={senMag}
-              onChange={setSenMag}
-              color={theme.colors.sensory}
-              sign={sign}
-              testID="impact-sensory"
-            />
-          </View>
+            <View>
+              <Text style={styles.label}>{t.field_impact}</Text>
+              <Text style={styles.sub}>
+                {type === "task"
+                  ? t.field_impact_sub_task
+                  : t.field_impact_sub_resource}
+              </Text>
 
-          <View style={{ height: 12 }} />
-        </ScrollView>
+              <ImpactSlider
+                Icon={Brain}
+                label={t.donut_cog}
+                mag={cogMag}
+                onChange={setCogMag}
+                color={theme.colors.cognitive}
+                sign={sign}
+                testID="impact-cognitive"
+              />
+              <ImpactSlider
+                Icon={Users}
+                label={t.donut_soc}
+                mag={socMag}
+                onChange={setSocMag}
+                color={theme.colors.social}
+                sign={sign}
+                testID="impact-social"
+              />
+              <ImpactSlider
+                Icon={Zap}
+                label={t.donut_sen}
+                mag={senMag}
+                onChange={setSenMag}
+                color={theme.colors.sensory}
+                sign={sign}
+                testID="impact-sensory"
+              />
+            </View>
+
+            {isEdit && (
+              <TouchableOpacity
+                style={styles.deleteBtn}
+                onPress={onDelete}
+                activeOpacity={0.85}
+                testID="delete-event-btn"
+              >
+                <Trash2 size={16} color={theme.colors.danger} strokeWidth={1.8} />
+                <Text style={styles.deleteBtnText}>{t.delete_event_btn}</Text>
+              </TouchableOpacity>
+            )}
+
+            <View style={{ height: 12 }} />
+          </ScrollView>
+        )}
 
         <View style={styles.footer}>
           <TouchableOpacity
@@ -250,7 +341,9 @@ export default function NewEventScreen() {
             ) : (
               <>
                 <Check size={18} color={theme.colors.bg} strokeWidth={2.4} />
-                <Text style={styles.ctaText}>{t.cta_save}</Text>
+                <Text style={styles.ctaText}>
+                  {isEdit ? t.save_changes : t.cta_save}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -271,10 +364,7 @@ const TypePill: React.FC<{
   <TouchableOpacity
     style={[
       styles.typePill,
-      active && {
-        borderColor: color,
-        backgroundColor: `${color}15`,
-      },
+      active && { borderColor: color, backgroundColor: `${color}15` },
     ]}
     onPress={onPress}
     activeOpacity={0.85}
@@ -357,15 +447,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  headerTitle: {
-    color: theme.colors.text,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  scroll: {
-    padding: 20,
-    gap: 22,
-  },
+  headerTitle: { color: theme.colors.text, fontSize: 16, fontWeight: "600" },
+  scroll: { padding: 20, gap: 22 },
   dateBlock: {
     flexDirection: "row",
     alignItems: "center",
@@ -416,16 +499,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  typeLabel: {
-    color: theme.colors.text,
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  typeDesc: {
-    color: theme.colors.textTertiary,
-    fontSize: 12,
-    marginTop: 2,
-  },
+  typeLabel: { color: theme.colors.text, fontSize: 15, fontWeight: "700" },
+  typeDesc: { color: theme.colors.textTertiary, fontSize: 12, marginTop: 2 },
   stepper: {
     flexDirection: "row",
     alignItems: "center",
@@ -473,10 +548,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   impactValue: { fontWeight: "700", fontSize: 14 },
-  slider: {
-    width: "100%",
-    height: 36,
-  },
+  slider: { width: "100%", height: 36 },
   scaleRow: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -487,6 +559,22 @@ const styles = StyleSheet.create({
   scaleText: {
     color: theme.colors.textTertiary,
     fontSize: 10,
+    fontWeight: "600",
+  },
+  deleteBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: "rgba(248,113,113,0.10)",
+    borderWidth: 1,
+    borderColor: "rgba(248,113,113,0.25)",
+  },
+  deleteBtnText: {
+    color: theme.colors.danger,
+    fontSize: 14,
     fontWeight: "600",
   },
   footer: {

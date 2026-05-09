@@ -124,19 +124,11 @@ export default function CalendarScreen() {
     setRefreshing(false);
   };
 
-  const handleDelete = (id: string) => {
-    Alert.alert(t.delete_event_title, t.delete_event_body, [
-      { text: t.cancel, style: "cancel" },
-      {
-        text: t.delete,
-        style: "destructive",
-        onPress: async () => {
-          await apiClient.deleteEvent(id);
-          loadAll();
-        },
-      },
-    ]);
+  const handleDelete = async (id: string) => {
+    await apiClient.deleteEvent(id);
+    loadAll();
   };
+  void handleDelete;
 
   const navigatePrev = () => {
     if (mode === "day") setSelectedDate(addDays(selectedDate, -1));
@@ -251,7 +243,6 @@ export default function CalendarScreen() {
             energy={energy}
             events={events}
             suggestions={suggestions}
-            onDelete={handleDelete}
             onAdd={() =>
               router.push({
                 pathname: "/event/new",
@@ -298,9 +289,10 @@ const DayView: React.FC<{
   energy: DayEnergy | null;
   events: AtypicEvent[];
   suggestions: Suggestion[];
-  onDelete: (id: string) => void;
   onAdd: () => void;
-}> = ({ energy, events, suggestions, onDelete, onAdd }) => (
+}> = ({ energy, events, suggestions, onAdd }) => {
+  const router = useRouter();
+  return (
   <View style={{ gap: 24 }}>
     <View style={styles.donutsCard}>
       <EnergyHeader
@@ -343,12 +335,22 @@ const DayView: React.FC<{
         </TouchableOpacity>
       ) : (
         events.map((ev) => (
-          <EventCard key={ev.id} event={ev} onDelete={onDelete} />
+          <EventCard
+            key={ev.id}
+            event={ev}
+            onPress={(e) =>
+              router.push({
+                pathname: "/event/new",
+                params: { id: e.id, date: e.date },
+              })
+            }
+          />
         ))
       )}
     </View>
   </View>
-);
+  );
+};
 
 const WeekView: React.FC<{
   days: DayEnergy[];
