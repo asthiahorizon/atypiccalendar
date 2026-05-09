@@ -145,19 +145,24 @@ export default function EventFormScreen() {
 
   const onDelete = () => {
     if (!editId) return;
+    const performDelete = async () => {
+      const rid = await AsyncStorage.getItem(reminderKey(editId));
+      if (rid) await cancelEventReminder(rid);
+      await AsyncStorage.removeItem(reminderKey(editId));
+      await apiClient.deleteEvent(editId);
+      router.back();
+    };
+    if (Platform.OS === "web") {
+      // eslint-disable-next-line no-alert
+      const ok = typeof window !== "undefined"
+        ? window.confirm(`${t.delete_event_title}\n\n${t.delete_event_body}`)
+        : true;
+      if (ok) performDelete();
+      return;
+    }
     Alert.alert(t.delete_event_title, t.delete_event_body, [
       { text: t.cancel, style: "cancel" },
-      {
-        text: t.delete,
-        style: "destructive",
-        onPress: async () => {
-          const rid = await AsyncStorage.getItem(reminderKey(editId));
-          if (rid) await cancelEventReminder(rid);
-          await AsyncStorage.removeItem(reminderKey(editId));
-          await apiClient.deleteEvent(editId);
-          router.back();
-        },
-      },
+      { text: t.delete, style: "destructive", onPress: performDelete },
     ]);
   };
 
