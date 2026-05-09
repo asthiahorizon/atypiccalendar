@@ -2,6 +2,7 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { Calendar, BarChart3, Settings as SettingsIcon } from "lucide-react-native";
 import { theme } from "../../lib/theme";
+import { t } from "../../lib/i18n";
 import { Platform } from "react-native";
 
 export default function TabsLayout() {
@@ -29,7 +30,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="calendar"
         options={{
-          title: "Calendrier",
+          title: t.tab_calendar,
           tabBarIcon: ({ color }) => (
             <Calendar size={22} color={color} strokeWidth={1.7} />
           ),
@@ -38,7 +39,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="stats"
         options={{
-          title: "Statistiques",
+          title: t.tab_stats,
           tabBarIcon: ({ color }) => (
             <BarChart3 size={22} color={color} strokeWidth={1.7} />
           ),
@@ -47,7 +48,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Paramètres",
+          title: t.tab_settings,
           tabBarIcon: ({ color }) => (
             <SettingsIcon size={22} color={color} strokeWidth={1.7} />
           ),

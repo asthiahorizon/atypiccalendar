@@ -18,6 +18,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { ArrowRight, Brain, Users, Zap } from "lucide-react-native";
 import { theme } from "../lib/theme";
+import { t } from "../lib/i18n";
 
 const { width } = Dimensions.get("window");
 
@@ -65,37 +66,32 @@ export default function Index() {
         <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
           <View style={styles.content}>
             <Animated.View style={titleStyle}>
-              <Text style={styles.eyebrow}>ATYPIC CALENDAR</Text>
-              <Text style={styles.title}>
-                Un calendrier{"\n"}pensé pour votre{"\n"}énergie.
-              </Text>
+              <Text style={styles.eyebrow}>{t.brand}</Text>
+              <Text style={styles.title}>{t.onboarding_title}</Text>
             </Animated.View>
 
             <Animated.View style={subStyle}>
-              <Text style={styles.subtitle}>
-                Suivez vos réserves cognitive, sociale et sensorielle.
-                Construisez vos journées avec douceur.
-              </Text>
+              <Text style={styles.subtitle}>{t.onboarding_subtitle}</Text>
             </Animated.View>
 
             <Animated.View style={[styles.pillars, cardsStyle]}>
               <Pillar
                 Icon={Brain}
                 color={theme.colors.cognitive}
-                title="Cognitif"
-                desc="Concentration, décisions"
+                title={t.pillar_cog}
+                desc={t.pillar_cog_desc}
               />
               <Pillar
                 Icon={Users}
                 color={theme.colors.social}
-                title="Social"
-                desc="Échanges, présence"
+                title={t.pillar_soc}
+                desc={t.pillar_soc_desc}
               />
               <Pillar
                 Icon={Zap}
                 color={theme.colors.sensory}
-                title="Sensoriel"
-                desc="Bruit, lumière, mouvement"
+                title={t.pillar_sen}
+                desc={t.pillar_sen_desc}
               />
             </Animated.View>
 
@@ -106,10 +102,10 @@ export default function Index() {
                 onPress={() => router.replace("/(tabs)/calendar")}
                 testID="onboarding-start-btn"
               >
-                <Text style={styles.ctaText}>Commencer</Text>
+                <Text style={styles.ctaText}>{t.cta_start}</Text>
                 <ArrowRight size={20} color={theme.colors.bg} strokeWidth={2.2} />
               </TouchableOpacity>
-              <Text style={styles.ctaSub}>Aucune création de compte requise</Text>
+              <Text style={styles.ctaSub}>{t.cta_no_account}</Text>
             </Animated.View>
           </View>
         </SafeAreaView>

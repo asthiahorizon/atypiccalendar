@@ -29,44 +29,47 @@ export const startOfMonth = (d: Date) =>
 export const endOfMonth = (d: Date) =>
   new Date(d.getFullYear(), d.getMonth() + 1, 0);
 
-const FR_MONTHS = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
+type Lang = "en" | "fr" | "it" | "de";
 
-const FR_DAYS_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-const FR_DAYS_LONG = [
-  "Lundi",
-  "Mardi",
-  "Mercredi",
-  "Jeudi",
-  "Vendredi",
-  "Samedi",
-  "Dimanche",
-];
+const MONTHS: Record<Lang, string[]> = {
+  en: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+  fr: ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"],
+  it: ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"],
+  de: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+};
 
-export const formatDateLong = (d: Date) => {
+const DAYS_SHORT: Record<Lang, string[]> = {
+  en: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+  fr: ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"],
+  it: ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"],
+  de: ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"],
+};
+
+const DAYS_LONG: Record<Lang, string[]> = {
+  en: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  fr: ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"],
+  it: ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"],
+  de: ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"],
+};
+
+export const formatDateLong = (d: Date, lang: Lang = "en") => {
   const dayIdx = (d.getDay() + 6) % 7;
-  return `${FR_DAYS_LONG[dayIdx]} ${d.getDate()} ${FR_MONTHS[d.getMonth()]}`;
+  const day = DAYS_LONG[lang][dayIdx];
+  const month = MONTHS[lang][d.getMonth()];
+  if (lang === "en") return `${day}, ${month} ${d.getDate()}`;
+  if (lang === "de") return `${day}, ${d.getDate()}. ${month}`;
+  return `${day} ${d.getDate()} ${month}`;
 };
 
-export const formatMonthYear = (d: Date) =>
-  `${FR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+export const formatMonthYear = (d: Date, lang: Lang = "en") =>
+  `${MONTHS[lang][d.getMonth()]} ${d.getFullYear()}`;
 
-export const dayShort = (d: Date) => {
+export const dayShort = (d: Date, lang: Lang = "en") => {
   const idx = (d.getDay() + 6) % 7;
-  return FR_DAYS_SHORT[idx];
+  return DAYS_SHORT[lang][idx];
 };
+
+export const monthName = (d: Date, lang: Lang = "en") => MONTHS[lang][d.getMonth()];
 
 export const isSameDay = (a: Date, b: Date) =>
   a.getFullYear() === b.getFullYear() &&

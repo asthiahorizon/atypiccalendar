@@ -14,6 +14,7 @@ import { theme } from "../../lib/theme";
 import { apiClient } from "../../lib/api";
 import { addDays, dayShort, toISODate } from "../../lib/dates";
 import { EnergyHeader } from "../../components/EnergyHeader";
+import { t, lang } from "../../lib/i18n";
 
 type Range = 7 | 30;
 
@@ -60,9 +61,9 @@ export default function StatsScreen() {
   const fatigueLabel = (() => {
     if (!data) return "—";
     const f = data.averages.fatigue_score;
-    if (f >= 60) return "Élevée";
-    if (f >= 35) return "Modérée";
-    return "Faible";
+    if (f >= 60) return t.fatigue_high;
+    if (f >= 35) return t.fatigue_med;
+    return t.fatigue_low;
   })();
 
   return (
@@ -79,11 +80,9 @@ export default function StatsScreen() {
         }
       >
         <View>
-          <Text style={styles.eyebrow}>STATISTIQUES</Text>
-          <Text style={styles.title}>Votre équilibre</Text>
-          <Text style={styles.subtitle}>
-            Une lecture douce de vos dernières journées.
-          </Text>
+          <Text style={styles.eyebrow}>{t.stats_eyebrow}</Text>
+          <Text style={styles.title}>{t.stats_title}</Text>
+          <Text style={styles.subtitle}>{t.stats_subtitle}</Text>
         </View>
 
         <View style={styles.modeRow}>
@@ -98,7 +97,7 @@ export default function StatsScreen() {
               <Text
                 style={[styles.modeText, range === r && styles.modeTextActive]}
               >
-                {r === 7 ? "7 jours" : "30 jours"}
+                {r === 7 ? t.range_7 : t.range_30}
               </Text>
             </TouchableOpacity>
           ))}
@@ -113,13 +112,13 @@ export default function StatsScreen() {
             {/* KPI cards */}
             <View style={styles.kpiRow}>
               <KpiCard
-                label="Fatigue moyenne"
+                label={t.kpi_avg_fatigue}
                 value={`${data.averages.fatigue_score}%`}
                 sub={fatigueLabel}
                 color={theme.colors.cognitive}
               />
               <KpiCard
-                label="Jours surcharge"
+                label={t.kpi_overload}
                 value={`${data.overload_days}`}
                 sub={`/${data.days.length}`}
                 color={theme.colors.social}
@@ -127,27 +126,27 @@ export default function StatsScreen() {
             </View>
             <View style={styles.kpiRow}>
               <KpiCard
-                label="Événements"
+                label={t.kpi_events}
                 value={`${data.total_events}`}
-                sub={range === 7 ? "cette semaine" : "ce mois"}
+                sub={range === 7 ? t.this_week : t.this_month}
                 color={theme.colors.sensory}
               />
               <KpiCard
-                label="Énergie restante"
+                label={t.kpi_remaining}
                 value={`${Math.round(
                   (data.averages.cognitive +
                     data.averages.social +
                     data.averages.sensory) /
                     3
                 )}%`}
-                sub="moyenne"
+                sub={t.avg_label}
                 color={theme.colors.success}
               />
             </View>
 
             {/* Avg donuts */}
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Réserves moyennes</Text>
+              <Text style={styles.cardTitle}>{t.avg_reserves}</Text>
               <View style={{ marginTop: 16 }}>
                 <EnergyHeader
                   cognitive={data.averages.cognitive}
@@ -160,24 +159,20 @@ export default function StatsScreen() {
 
             {/* Fatigue chart */}
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Tendance fatigue</Text>
-              <Text style={styles.cardSub}>
-                Plus la barre est haute, plus la fatigue est forte.
-              </Text>
+              <Text style={styles.cardTitle}>{t.fatigue_trend}</Text>
+              <Text style={styles.cardSub}>{t.fatigue_trend_sub}</Text>
               <FatigueChart days={data.days} />
             </View>
 
             {/* Energy balance chart */}
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Équilibre des 3 énergies</Text>
-              <Text style={styles.cardSub}>
-                Les 3 réserves au fil des jours.
-              </Text>
+              <Text style={styles.cardTitle}>{t.energy_balance}</Text>
+              <Text style={styles.cardSub}>{t.energy_balance_sub}</Text>
               <EnergyChart days={data.days} />
               <View style={styles.legendRow}>
-                <Legend color={theme.colors.cognitive} label="Cognitif" />
-                <Legend color={theme.colors.social} label="Social" />
-                <Legend color={theme.colors.sensory} label="Sensoriel" />
+                <Legend color={theme.colors.cognitive} label={t.donut_cog} />
+                <Legend color={theme.colors.social} label={t.donut_soc} />
+                <Legend color={theme.colors.sensory} label={t.donut_sen} />
               </View>
             </View>
           </>
@@ -233,7 +228,7 @@ const FatigueChart: React.FC<{ days: any[] }> = ({ days }) => {
               />
             </View>
             <Text style={styles.chartLabel}>
-              {days.length <= 10 ? dayShort(date) : i % 3 === 0 ? `${date.getDate()}` : ""}
+              {days.length <= 10 ? dayShort(date, lang) : i % 3 === 0 ? `${date.getDate()}` : ""}
             </Text>
           </View>
         );
@@ -274,7 +269,7 @@ const EnergyChart: React.FC<{ days: any[] }> = ({ days }) => {
               />
             </View>
             <Text style={styles.chartLabel}>
-              {days.length <= 10 ? dayShort(date) : i % 3 === 0 ? `${date.getDate()}` : ""}
+              {days.length <= 10 ? dayShort(date, lang) : i % 3 === 0 ? `${date.getDate()}` : ""}
             </Text>
           </View>
         );

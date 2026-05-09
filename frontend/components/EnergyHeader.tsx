@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { EnergyDonut } from "./EnergyDonut";
 import { theme } from "../lib/theme";
+import { t } from "../lib/i18n";
 
 interface Props {
   cognitive: number;
@@ -29,7 +30,7 @@ export const EnergyHeader: React.FC<Props> = ({
           testID="donut-cognitive"
         />
         <Text style={[styles.label, { color: theme.colors.cognitive }]}>
-          Cognitif
+          {t.donut_cog}
         </Text>
       </View>
       <View style={styles.item}>
@@ -43,7 +44,7 @@ export const EnergyHeader: React.FC<Props> = ({
           testID="donut-social"
         />
         <Text style={[styles.label, { color: theme.colors.social }]}>
-          Social
+          {t.donut_soc}
         </Text>
       </View>
       <View style={styles.item}>
@@ -57,7 +58,7 @@ export const EnergyHeader: React.FC<Props> = ({
           testID="donut-sensory"
         />
         <Text style={[styles.label, { color: theme.colors.sensory }]}>
-          Sensoriel
+          {t.donut_sen}
         </Text>
       </View>
     </View>

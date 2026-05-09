@@ -1,0 +1,56 @@
+{
+  "summary": "Frontend-only regression test for Atypic Calendar refactor (templates removed, slider-based impacts, i18n with auto-detection, Settings finalized). All 14 requested frontend behaviors verified PASS via Playwright on mobile viewport (390x844) against Expo web preview. Backend skipped per request (already verified in iteration 1).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "global", "issue": "RN Web warnings in console (non-blocking): 'shadow*' style props deprecated (use boxShadow), 'props.pointerEvents' deprecated (use style.pointerEvents), and an Invalid DOM property warning for transform-origin -> transformOrigin. These don't break functionality but should be cleaned up at some point."}
+    ]
+  },
+  "test_report_links": ["/app/test_reports/iteration_2.json"],
+  "action_items": [
+    "Optional cleanup: address React Native Web deprecation warnings (shadow* -> boxShadow, pointerEvents, transform-origin) to silence console noise."
+  ],
+  "critical_code_review_comments": [
+    "lib/i18n.ts: language is captured at module init (const lang = detectLang()). Acceptable for current MVP scope; future per-user language switch would require refactor to a runtime locale provider/context.",
+    "Imports of Plus/Minus icons in event/new.tsx are still used for the duration stepper, so unused-import lint is fine. Slider thumb/track styling renders correctly on web."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "n/a (not retested)", "frontend": "100% (14/14 checks)"},
+  "seed_data_creation": "Created one event 'TEST_Doctor' (resource type, +15 cognitive) on today's date via the UI to verify save flow. Cleanup not done; main agent can ignore or clear from UI.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "All frontend flows working end-to-end on mobile viewport. Verified: onboarding (EN 'Get started'), calendar with 3 donuts + Day/Week/Month, FAB opens modal, no Templates section, title placeholder 'Doctor', type-task/type-resource pills, 3 ImpactSlider rows with sliders + 0/25/50/75 scale, sign auto-applied (Task=-15 violet, Resource=+15 green), event save closes modal and event appears in day list, Stats tab loads with no MVP wording, Settings shows setting-language row with current language ('English') and no MVP anywhere. Default browser locale was English so EN dictionary used as expected.",
+  "rca_of_issue": "n/a — no failures.",
+  "detailed_checks": {
+    "onboarding_visible": true,
+    "onboarding_btn_text": "Get started",
+    "no_MVP_in_onboarding": true,
+    "calendar_mode_day_week_month_all_present": true,
+    "fab_add_event_visible": true,
+    "donuts_rendered (svg_count)": 15,
+    "modal_title_input_present": true,
+    "title_placeholder_is_Doctor": true,
+    "type_task_pill": true,
+    "type_resource_pill": true,
+    "impact_cognitive_row": true,
+    "impact_social_row": true,
+    "impact_sensory_row": true,
+    "impact_cognitive_slider": true,
+    "impact_social_slider": true,
+    "impact_sensory_slider": true,
+    "no_templates_keyword_in_modal": true,
+    "scale_0_25_50_75_visible": true,
+    "task_default_shows_minus_15": true,
+    "resource_shows_plus_15": true,
+    "save_closes_modal": true,
+    "event_appears_in_day_view": true,
+    "stats_tab_loads": true,
+    "stats_no_MVP": true,
+    "settings_language_row_present": true,
+    "settings_language_text": "Language / English",
+    "settings_no_MVP": true
+  }
+}

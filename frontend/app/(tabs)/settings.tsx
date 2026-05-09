@@ -5,7 +5,6 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Linking,
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -18,22 +17,22 @@ import {
   Trash2,
   Bell,
   Moon,
+  Globe,
 } from "lucide-react-native";
 import { theme } from "../../lib/theme";
+import { t } from "../../lib/i18n";
 
 export default function SettingsScreen() {
   const onAbout = () => {
-    Alert.alert(
-      "Atypic Calendar",
-      "Un calendrier énergétique pensé pour respecter votre système nerveux.\n\nVersion 1.0 (MVP)"
-    );
+    Alert.alert(t.about_title, t.about_body);
+  };
+
+  const onEngagement = () => {
+    Alert.alert(t.engagement_title, t.engagement_body);
   };
 
   const onClearAll = () => {
-    Alert.alert(
-      "Réinitialiser",
-      "Cette fonctionnalité sera disponible avec un compte. Pour l'instant, vous pouvez supprimer vos événements un par un depuis le calendrier."
-    );
+    Alert.alert(t.clear_title, t.clear_body);
   };
 
   return (
@@ -43,57 +42,63 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View>
-          <Text style={styles.eyebrow}>PARAMÈTRES</Text>
-          <Text style={styles.title}>Votre espace</Text>
+          <Text style={styles.eyebrow}>{t.settings_eyebrow}</Text>
+          <Text style={styles.title}>{t.settings_title}</Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Réserves d'énergie</Text>
+          <Text style={styles.sectionTitle}>{t.reserves_section}</Text>
           <View style={styles.card}>
             <ReserveRow
               Icon={Brain}
               color={theme.colors.cognitive}
-              title="Cognitif"
-              desc="Concentration, prise de décision, charge mentale."
+              title={t.donut_cog}
+              desc={t.res_cog_desc}
             />
             <View style={styles.divider} />
             <ReserveRow
               Icon={Users}
               color={theme.colors.social}
-              title="Social"
-              desc="Interactions, échanges, présence des autres."
+              title={t.donut_soc}
+              desc={t.res_soc_desc}
             />
             <View style={styles.divider} />
             <ReserveRow
               Icon={Zap}
               color={theme.colors.sensory}
-              title="Sensoriel"
-              desc="Bruit, lumière, mouvement, stimulation."
+              title={t.donut_sen}
+              desc={t.res_sen_desc}
             />
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Application</Text>
+          <Text style={styles.sectionTitle}>{t.app_section}</Text>
           <View style={styles.card}>
             <Row
               Icon={Moon}
-              title="Thème"
-              value="Sombre premium"
+              title={t.setting_theme}
+              value={t.setting_theme_value}
               testID="setting-theme"
             />
             <View style={styles.divider} />
             <Row
+              Icon={Globe}
+              title={t.setting_language}
+              value={t.language_name}
+              testID="setting-language"
+            />
+            <View style={styles.divider} />
+            <Row
               Icon={Bell}
-              title="Notifications"
-              value="Bientôt"
+              title={t.setting_notifications}
+              value={t.setting_notifications_value}
               testID="setting-notifications"
             />
             <View style={styles.divider} />
             <Row
               Icon={Info}
-              title="À propos"
-              value=""
+              title={t.setting_about}
               onPress={onAbout}
               testID="setting-about"
             />
@@ -101,25 +106,18 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Soin & douceur</Text>
+          <Text style={styles.sectionTitle}>{t.care_section}</Text>
           <View style={styles.card}>
             <Row
               Icon={HeartHandshake}
-              title="Notre engagement"
-              value=""
-              onPress={() =>
-                Alert.alert(
-                  "Notre engagement",
-                  "Nous concevons cette application pour respecter votre système nerveux. Pas de notifications agressives, pas de score de productivité, juste un compagnon doux pour votre énergie."
-                )
-              }
+              title={t.setting_engagement}
+              onPress={onEngagement}
               testID="setting-engagement"
             />
             <View style={styles.divider} />
             <Row
               Icon={Trash2}
-              title="Réinitialiser les données"
-              value=""
+              title={t.setting_clear}
               onPress={onClearAll}
               testID="setting-clear"
               danger
@@ -127,9 +125,7 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <Text style={styles.footer}>
-          Atypic Calendar · Avec douceur · v1.0
-        </Text>
+        <Text style={styles.footer}>{t.footer}</Text>
       </ScrollView>
     </SafeAreaView>
   );

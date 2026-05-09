@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import Slider from "@react-native-community/slider";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -18,74 +19,42 @@ import {
   Brain,
   Users,
   Zap,
-  Stethoscope,
-  Utensils,
-  ShoppingCart,
-  Trees,
-  Moon,
-  Dumbbell,
-  BookOpen,
-  Flower2,
-  Clock,
   Calendar as CalendarIcon,
   Check,
   Plus,
   Minus,
 } from "lucide-react-native";
 import { theme } from "../../lib/theme";
-import { apiClient, Template, EventType } from "../../lib/api";
+import { apiClient, EventType } from "../../lib/api";
 import { fromISODate, formatDateLong } from "../../lib/dates";
+import { t, lang } from "../../lib/i18n";
 
-const ICONS: Record<string, any> = {
-  stethoscope: Stethoscope,
-  utensils: Utensils,
-  brain: Brain,
-  users: Users,
-  "shopping-cart": ShoppingCart,
-  trees: Trees,
-  moon: Moon,
-  dumbbell: Dumbbell,
-  "book-open": BookOpen,
-  lotus: Flower2,
-};
+const STEP = 5;
+const MAX = 75;
 
 export default function NewEventScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ date?: string }>();
   const date = params.date || new Date().toISOString().slice(0, 10);
 
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [time, setTime] = useState("09:00");
   const [duration, setDuration] = useState(60);
   const [type, setType] = useState<EventType>("task");
-  const [cog, setCog] = useState(0);
-  const [soc, setSoc] = useState(0);
-  const [sen, setSen] = useState(0);
+  const [cogMag, setCogMag] = useState(15);
+  const [socMag, setSocMag] = useState(0);
+  const [senMag, setSenMag] = useState(0);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    apiClient.getTemplates().then(setTemplates).catch(console.warn);
-  }, []);
-
-  const applyTemplate = (t: Template) => {
-    setSelectedTemplate(t.id);
-    setTitle(t.name);
-    setType(t.type);
-    setDuration(t.duration_minutes);
-    setCog(t.cognitive_impact);
-    setSoc(t.social_impact);
-    setSen(t.sensory_impact);
-  };
+  const sign = type === "task" ? -1 : 1;
 
   const onSubmit = async () => {
     if (!title.trim()) {
-      Alert.alert("Titre manquant", "Donnez un nom à votre événement.");
+      Alert.alert(t.err_title_missing_t, t.err_title_missing_m);
       return;
     }
     if (!/^\d{2}:\d{2}$/.test(time)) {
-      Alert.alert("Heure invalide", "Format attendu : HH:MM (ex. 09:30).");
+      Alert.alert(t.err_time_invalid_t, t.err_time_invalid_m);
       return;
     }
 
@@ -96,32 +65,28 @@ export default function NewEventScreen() {
       start_time: time,
       duration_minutes: duration,
       type,
-      cognitive_impact: cog,
-      social_impact: soc,
-      sensory_impact: sen,
-      template_id: selectedTemplate,
+      cognitive_impact: cogMag * sign,
+      social_impact: socMag * sign,
+      sensory_impact: senMag * sign,
     };
 
     try {
       const check = await apiClient.checkEvent(payload as any);
       if (check.blocked) {
         setSaving(false);
-        Alert.alert(
-          "Capacité dépassée",
-          "Cette activité dépasse votre capacité énergétique actuelle.",
-          [{ text: "Compris" }]
-        );
+        Alert.alert(t.err_capacity_t, t.err_capacity_m, [{ text: t.understood }]);
         return;
       }
       await apiClient.createEvent(payload as any);
       router.back();
     } catch (e: any) {
       setSaving(false);
-      Alert.alert("Impossible d'ajouter", e?.message || "Erreur inattendue.");
+      Alert.alert(t.err_cant_add, e?.message || t.err_unexpected);
     }
   };
 
   const dateObj = useMemo(() => fromISODate(date), [date]);
+  const dateText = useMemo(() => formatDateLong(dateObj, lang), [dateObj]);
 
   return (
     <SafeAreaView style={styles.root} edges={["top", "bottom"]}>
@@ -137,7 +102,7 @@ export default function NewEventScreen() {
           >
             <X size={20} color={theme.colors.text} strokeWidth={1.7} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Nouvel événement</Text>
+          <Text style={styles.headerTitle}>{t.new_event}</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -154,63 +119,16 @@ export default function NewEventScreen() {
               color={theme.colors.textSecondary}
               strokeWidth={1.7}
             />
-            <Text style={styles.dateText}>{formatDateLong(dateObj)}</Text>
-          </View>
-
-          {/* Templates */}
-          <View>
-            <Text style={styles.label}>Templates rapides</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.tplRow}
-            >
-              {templates.map((t) => {
-                const Icon = ICONS[t.icon] || Brain;
-                const active = selectedTemplate === t.id;
-                const accent =
-                  t.type === "resource"
-                    ? theme.colors.success
-                    : theme.colors.cognitive;
-                return (
-                  <TouchableOpacity
-                    key={t.id}
-                    style={[
-                      styles.tpl,
-                      active && {
-                        borderColor: accent,
-                        backgroundColor: `${accent}15`,
-                      },
-                    ]}
-                    onPress={() => applyTemplate(t)}
-                    activeOpacity={0.85}
-                    testID={`template-${t.id}`}
-                  >
-                    <View
-                      style={[
-                        styles.tplIcon,
-                        { backgroundColor: `${accent}22` },
-                      ]}
-                    >
-                      <Icon size={16} color={accent} strokeWidth={1.7} />
-                    </View>
-                    <Text style={styles.tplName}>{t.name}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+            <Text style={styles.dateText}>{dateText}</Text>
           </View>
 
           {/* Title */}
           <View>
-            <Text style={styles.label}>Titre</Text>
+            <Text style={styles.label}>{t.field_title}</Text>
             <TextInput
               value={title}
-              onChangeText={(v) => {
-                setTitle(v);
-                setSelectedTemplate(null);
-              }}
-              placeholder="Ex. Marche en forêt"
+              onChangeText={setTitle}
+              placeholder={t.field_title_placeholder}
               placeholderTextColor={theme.colors.textTertiary}
               style={styles.input}
               testID="event-title-input"
@@ -219,20 +137,20 @@ export default function NewEventScreen() {
 
           {/* Type */}
           <View>
-            <Text style={styles.label}>Type</Text>
+            <Text style={styles.label}>{t.field_type}</Text>
             <View style={styles.typeRow}>
               <TypePill
                 active={type === "task"}
-                label="Tâche"
-                desc="Diminue l'énergie"
+                label={t.type_task}
+                desc={t.type_task_desc}
                 color={theme.colors.cognitive}
                 onPress={() => setType("task")}
                 testID="type-task"
               />
               <TypePill
                 active={type === "resource"}
-                label="Ressource"
-                desc="Recharge l'énergie"
+                label={t.type_resource}
+                desc={t.type_resource_desc}
                 color={theme.colors.success}
                 onPress={() => setType("resource")}
                 testID="type-resource"
@@ -243,7 +161,7 @@ export default function NewEventScreen() {
           {/* Time + Duration */}
           <View style={{ flexDirection: "row", gap: 12 }}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Heure</Text>
+              <Text style={styles.label}>{t.field_time}</Text>
               <TextInput
                 value={time}
                 onChangeText={setTime}
@@ -255,7 +173,7 @@ export default function NewEventScreen() {
               />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.label}>Durée</Text>
+              <Text style={styles.label}>{t.field_duration}</Text>
               <View style={styles.stepper}>
                 <TouchableOpacity
                   style={styles.stepBtn}
@@ -264,7 +182,9 @@ export default function NewEventScreen() {
                 >
                   <Minus size={16} color={theme.colors.text} strokeWidth={2} />
                 </TouchableOpacity>
-                <Text style={styles.stepText}>{duration} min</Text>
+                <Text style={styles.stepText}>
+                  {duration} {t.duration_unit}
+                </Text>
                 <TouchableOpacity
                   style={styles.stepBtn}
                   onPress={() => setDuration(Math.min(480, duration + 15))}
@@ -278,33 +198,38 @@ export default function NewEventScreen() {
 
           {/* Impacts */}
           <View>
-            <Text style={styles.label}>Impact énergétique</Text>
+            <Text style={styles.label}>{t.field_impact}</Text>
             <Text style={styles.sub}>
-              Glissez pour ajuster (entre -100 et +100).
+              {type === "task"
+                ? t.field_impact_sub_task
+                : t.field_impact_sub_resource}
             </Text>
 
-            <ImpactRow
+            <ImpactSlider
               Icon={Brain}
-              label="Cognitif"
-              value={cog}
-              onChange={setCog}
+              label={t.donut_cog}
+              mag={cogMag}
+              onChange={setCogMag}
               color={theme.colors.cognitive}
+              sign={sign}
               testID="impact-cognitive"
             />
-            <ImpactRow
+            <ImpactSlider
               Icon={Users}
-              label="Social"
-              value={soc}
-              onChange={setSoc}
+              label={t.donut_soc}
+              mag={socMag}
+              onChange={setSocMag}
               color={theme.colors.social}
+              sign={sign}
               testID="impact-social"
             />
-            <ImpactRow
+            <ImpactSlider
               Icon={Zap}
-              label="Sensoriel"
-              value={sen}
-              onChange={setSen}
+              label={t.donut_sen}
+              mag={senMag}
+              onChange={setSenMag}
               color={theme.colors.sensory}
+              sign={sign}
               testID="impact-sensory"
             />
           </View>
@@ -325,7 +250,7 @@ export default function NewEventScreen() {
             ) : (
               <>
                 <Check size={18} color={theme.colors.bg} strokeWidth={2.4} />
-                <Text style={styles.ctaText}>Ajouter l'événement</Text>
+                <Text style={styles.ctaText}>{t.cta_save}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -360,15 +285,24 @@ const TypePill: React.FC<{
   </TouchableOpacity>
 );
 
-const ImpactRow: React.FC<{
+const ImpactSlider: React.FC<{
   Icon: any;
   label: string;
-  value: number;
+  mag: number;
   onChange: (v: number) => void;
   color: string;
+  sign: number;
   testID?: string;
-}> = ({ Icon, label, value, onChange, color, testID }) => {
-  const STEPS = [-50, -25, -10, 0, 10, 25, 50];
+}> = ({ Icon, label, mag, onChange, color, sign, testID }) => {
+  const signedDisplay =
+    mag === 0 ? "0" : sign > 0 ? `+${mag}` : `-${mag}`;
+  const valueColor =
+    mag === 0
+      ? theme.colors.textSecondary
+      : sign > 0
+      ? theme.colors.success
+      : color;
+
   return (
     <View style={styles.impactRow} testID={testID}>
       <View style={styles.impactHead}>
@@ -376,42 +310,27 @@ const ImpactRow: React.FC<{
           <Icon size={14} color={color} strokeWidth={1.8} />
         </View>
         <Text style={styles.impactLabel}>{label}</Text>
-        <Text
-          style={[
-            styles.impactValue,
-            {
-              color: value > 0 ? theme.colors.success : value < 0 ? color : theme.colors.textSecondary,
-            },
-          ]}
-        >
-          {value > 0 ? `+${value}` : value}
+        <Text style={[styles.impactValue, { color: valueColor }]}>
+          {signedDisplay}
         </Text>
       </View>
-      <View style={styles.impactSteps}>
-        {STEPS.map((s) => {
-          const active = value === s;
-          return (
-            <TouchableOpacity
-              key={s}
-              style={[
-                styles.stepChip,
-                active && { backgroundColor: color, borderColor: color },
-              ]}
-              onPress={() => onChange(s)}
-              activeOpacity={0.85}
-              testID={`${testID}-step-${s}`}
-            >
-              <Text
-                style={[
-                  styles.stepChipText,
-                  active && { color: theme.colors.bg },
-                ]}
-              >
-                {s > 0 ? `+${s}` : s}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+      <Slider
+        style={styles.slider}
+        minimumValue={0}
+        maximumValue={MAX}
+        step={STEP}
+        value={mag}
+        onValueChange={onChange}
+        minimumTrackTintColor={color}
+        maximumTrackTintColor={"rgba(255,255,255,0.08)"}
+        thumbTintColor={color}
+        testID={`${testID}-slider`}
+      />
+      <View style={styles.scaleRow}>
+        <Text style={styles.scaleText}>0</Text>
+        <Text style={styles.scaleText}>25</Text>
+        <Text style={styles.scaleText}>50</Text>
+        <Text style={styles.scaleText}>75</Text>
       </View>
     </View>
   );
@@ -477,26 +396,6 @@ const styles = StyleSheet.create({
     marginTop: -6,
     marginBottom: 12,
   },
-  tplRow: { gap: 8, paddingRight: 8 },
-  tpl: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 14,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  tplIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tplName: { color: theme.colors.text, fontSize: 13, fontWeight: "600" },
   input: {
     backgroundColor: theme.colors.surface,
     borderRadius: 14,
@@ -551,11 +450,13 @@ const styles = StyleSheet.create({
   impactRow: {
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingTop: 14,
+    paddingBottom: 6,
     borderWidth: 1,
     borderColor: theme.colors.border,
     marginBottom: 10,
-    gap: 10,
+    gap: 4,
   },
   impactHead: { flexDirection: "row", alignItems: "center", gap: 10 },
   impactIcon: {
@@ -572,18 +473,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   impactValue: { fontWeight: "700", fontSize: 14 },
-  impactSteps: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  stepChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 9999,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+  slider: {
+    width: "100%",
+    height: 36,
   },
-  stepChipText: {
-    color: theme.colors.text,
-    fontSize: 12,
+  scaleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 4,
+    marginTop: -4,
+    marginBottom: 4,
+  },
+  scaleText: {
+    color: theme.colors.textTertiary,
+    fontSize: 10,
     fontWeight: "600",
   },
   footer: {

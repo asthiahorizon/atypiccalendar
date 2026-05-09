@@ -32,6 +32,7 @@ import {
   formatMonthYear,
   isSameDay,
   isToday,
+  monthName,
   startOfMonth,
   startOfWeek,
   toISODate,
@@ -40,8 +41,16 @@ import { EnergyHeader } from "../../components/EnergyHeader";
 import { EventCard } from "../../components/EventCard";
 import { FatigueIndicator } from "../../components/FatigueIndicator";
 import { SuggestionCard } from "../../components/SuggestionCard";
+import { t, lang, sugByType } from "../../lib/i18n";
 
 type ViewMode = "day" | "week" | "month";
+
+const WEEK_HEADERS: Record<string, string[]> = {
+  en: ["M", "T", "W", "T", "F", "S", "S"],
+  fr: ["L", "M", "M", "J", "V", "S", "D"],
+  it: ["L", "M", "M", "G", "V", "S", "D"],
+  de: ["M", "D", "M", "D", "F", "S", "S"],
+};
 
 export default function CalendarScreen() {
   const router = useRouter();
@@ -116,10 +125,10 @@ export default function CalendarScreen() {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert("Supprimer cet événement ?", "Cette action est irréversible.", [
-      { text: "Annuler", style: "cancel" },
+    Alert.alert(t.delete_event_title, t.delete_event_body, [
+      { text: t.cancel, style: "cancel" },
       {
-        text: "Supprimer",
+        text: t.delete,
         style: "destructive",
         onPress: async () => {
           await apiClient.deleteEvent(id);
@@ -147,13 +156,13 @@ export default function CalendarScreen() {
   };
 
   const headerTitle = useMemo(() => {
-    if (mode === "day") return formatDateLong(selectedDate);
+    if (mode === "day") return formatDateLong(selectedDate, lang);
     if (mode === "week") {
       const s = startOfWeek(selectedDate);
       const e = addDays(s, 6);
-      return `${s.getDate()} – ${e.getDate()} ${formatMonthYear(e).split(" ")[0].toLowerCase()}`;
+      return `${s.getDate()} – ${e.getDate()} ${monthName(e, lang)}`;
     }
-    return formatMonthYear(selectedDate);
+    return formatMonthYear(selectedDate, lang);
   }, [mode, selectedDate]);
 
   return (
@@ -171,9 +180,9 @@ export default function CalendarScreen() {
       >
         {/* Top bar */}
         <View style={styles.topBar}>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.eyebrow}>
-              {isToday(selectedDate) ? "Aujourd'hui" : "Journée"}
+              {isToday(selectedDate) ? t.today : t.day_label}
             </Text>
             <Text style={styles.title} numberOfLines={1}>
               {headerTitle}
@@ -205,7 +214,7 @@ export default function CalendarScreen() {
               <Text
                 style={[styles.modeText, mode === m && styles.modeTextActive]}
               >
-                {m === "day" ? "Jour" : m === "week" ? "Semaine" : "Mois"}
+                {m === "day" ? t.view_day : m === "week" ? t.view_week : t.view_month}
               </Text>
             </TouchableOpacity>
           ))}
@@ -305,9 +314,9 @@ const DayView: React.FC<{
 
     {suggestions.length > 0 && (
       <View style={{ gap: 10 }}>
-        <Text style={styles.sectionTitle}>Suggestions douces</Text>
+        <Text style={styles.sectionTitle}>{t.suggestions_title}</Text>
         {suggestions.map((s, i) => (
-          <SuggestionCard key={i} type={s.type} message={s.message} />
+          <SuggestionCard key={i} type={s.type} message={sugByType(s.type)} />
         ))}
       </View>
     )}
@@ -315,7 +324,7 @@ const DayView: React.FC<{
     <View style={{ gap: 12 }}>
       <View style={styles.sectionRow}>
         <Text style={styles.sectionTitle}>
-          Événements{" "}
+          {t.events_title}{" "}
           <Text style={styles.sectionCount}>· {events.length}</Text>
         </Text>
       </View>
@@ -329,10 +338,8 @@ const DayView: React.FC<{
           <View style={styles.emptyIcon}>
             <Plus size={20} color={theme.colors.text} strokeWidth={1.8} />
           </View>
-          <Text style={styles.emptyTitle}>Aucun événement aujourd'hui</Text>
-          <Text style={styles.emptySub}>
-            Ajoutez une tâche ou une ressource pour suivre votre énergie.
-          </Text>
+          <Text style={styles.emptyTitle}>{t.empty_title}</Text>
+          <Text style={styles.emptySub}>{t.empty_sub}</Text>
         </TouchableOpacity>
       ) : (
         events.map((ev) => (
@@ -349,7 +356,7 @@ const WeekView: React.FC<{
   onSelectDay: (d: Date) => void;
 }> = ({ days, selected, onSelectDay }) => (
   <View style={{ gap: 12 }}>
-    <Text style={styles.sectionTitle}>Vue semaine</Text>
+    <Text style={styles.sectionTitle}>{t.week_view_title}</Text>
     {days.map((d) => {
       const date = new Date(`${d.date}T00:00:00`);
       const isSel = isSameDay(date, selected);
@@ -365,7 +372,7 @@ const WeekView: React.FC<{
           testID={`week-day-${d.date}`}
         >
           <View style={styles.weekDay}>
-            <Text style={styles.weekDayLabel}>{dayShort(date)}</Text>
+            <Text style={styles.weekDayLabel}>{dayShort(date, lang)}</Text>
             <Text style={[styles.weekDayNum, isToday(date) && styles.weekDayToday]}>
               {date.getDate()}
             </Text>
@@ -407,7 +414,9 @@ const WeekView: React.FC<{
               </View>
             </View>
             <Text style={styles.weekMeta}>
-              {d.events_count} événement{d.events_count > 1 ? "s" : ""} · énergie {avg}%
+              {d.events_count}{" "}
+              {d.events_count > 1 ? t.events_count_other : t.events_count_one} ·{" "}
+              {t.energy_short} {avg}%
             </Text>
           </View>
         </TouchableOpacity>
@@ -444,9 +453,9 @@ const MonthView: React.FC<{
 
   return (
     <View style={{ gap: 12 }}>
-      <Text style={styles.sectionTitle}>Vue mois</Text>
+      <Text style={styles.sectionTitle}>{t.month_view_title}</Text>
       <View style={styles.monthHeader}>
-        {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
+        {WEEK_HEADERS[lang].map((d, i) => (
           <Text key={i} style={styles.monthHeaderDay}>
             {d}
           </Text>
@@ -504,6 +513,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 12,
   },
   eyebrow: {
     color: theme.colors.cognitive,
@@ -514,7 +524,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: theme.colors.text,
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: "700",
     letterSpacing: -0.7,
     textTransform: "capitalize",

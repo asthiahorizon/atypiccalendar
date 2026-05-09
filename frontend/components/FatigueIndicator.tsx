@@ -1,19 +1,20 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { theme } from "../lib/theme";
+import { t } from "../lib/i18n";
 
 interface Props {
   score: number; // 0..100 (higher = more fatigue)
 }
 
 export const FatigueIndicator: React.FC<Props> = ({ score }) => {
-  let label = "Fatigue faible";
+  let label = t.fatigue_low;
   let color = theme.colors.success;
   if (score >= 60) {
-    label = "Fatigue élevée";
+    label = t.fatigue_high;
     color = "#E879A6";
   } else if (score >= 35) {
-    label = "Fatigue modérée";
+    label = t.fatigue_med;
     color = "#FFB07F";
   }
 
@@ -23,7 +24,7 @@ export const FatigueIndicator: React.FC<Props> = ({ score }) => {
   return (
     <View style={styles.wrap} testID="fatigue-indicator">
       <View style={styles.row}>
-        <Text style={styles.label}>État du jour</Text>
+        <Text style={styles.label}>{t.fatigue_label}</Text>
         <Text style={[styles.score, { color }]}>{label}</Text>
       </View>
       <View style={styles.bars}>
@@ -41,7 +42,7 @@ export const FatigueIndicator: React.FC<Props> = ({ score }) => {
         ))}
       </View>
       <Text style={styles.sub}>
-        Score moyen · {score}%
+        {t.fatigue_avg_score} · {score}%
       </Text>
     </View>
   );

@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Trash2, ArrowDownRight, ArrowUpRight } from "lucide-react-native";
 import { theme } from "../lib/theme";
+import { t } from "../lib/i18n";
 import type { AtypicEvent } from "../lib/api";
 
 interface Props {
@@ -49,7 +50,7 @@ export const EventCard: React.FC<Props> = ({ event, onDelete, onPress }) => {
                 { color: isResource ? theme.colors.success : theme.colors.cognitive },
               ]}
             >
-              {isResource ? "Ressource" : "Tâche"}
+              {isResource ? t.type_resource : t.type_task}
             </Text>
           </View>
         </View>
@@ -57,10 +58,10 @@ export const EventCard: React.FC<Props> = ({ event, onDelete, onPress }) => {
           {event.title}
         </Text>
         <View style={styles.impacts}>
-          <ImpactPill label="Cog" value={event.cognitive_impact} color={theme.colors.cognitive} />
-          <ImpactPill label="Soc" value={event.social_impact} color={theme.colors.social} />
-          <ImpactPill label="Sen" value={event.sensory_impact} color={theme.colors.sensory} />
-          <Text style={styles.duration}>{event.duration_minutes} min</Text>
+          <ImpactPill label={t.donut_cog.slice(0, 3)} value={event.cognitive_impact} color={theme.colors.cognitive} />
+          <ImpactPill label={t.donut_soc.slice(0, 3)} value={event.social_impact} color={theme.colors.social} />
+          <ImpactPill label={t.donut_sen.slice(0, 3)} value={event.sensory_impact} color={theme.colors.sensory} />
+          <Text style={styles.duration}>{event.duration_minutes} {t.duration_unit}</Text>
         </View>
       </View>
       {onDelete && (
