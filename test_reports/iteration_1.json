@@ -1,0 +1,37 @@
+{
+  "summary": "Tested Atypic Calendar (FastAPI + Expo/React Native). Backend: 12/12 pytest cases passed covering templates, events CRUD, capacity blocking with French message, /events/check, day & range energy, stats, suggestions (default 'calm'), update/delete, and _id exclusion. Frontend (mobile 390x844): onboarding screen with testID 'onboarding-start-btn' renders and navigates to calendar; 3 animated donuts (cognitive/social/sensory) render; mode segmented control switches Jour/Semaine/Mois; FAB opens new-event modal; all 10 templates render with testID 'template-{id}'; selecting 'medecin' fills title 'Médecin' and impacts; type pills task/resource present; saving valid event closes modal and adds event card to day view; stats tab shows KPIs (fatigue, surcharge, events, energy) + donuts + trend chart; settings tab shows the 3 reserves with descriptions and À propos.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "global", "issues": ["Console warnings: 'shadow*' style props deprecated (use boxShadow), 'props.pointerEvents is deprecated', 'Invalid DOM property transform-origin' from react-native-reanimated/svg on web. Non-blocking but should be addressed by main agent."]}
+    ],
+    "react_native_issues": [
+      {"component": "package.json", "issue": "Expo reports react-native-svg@15.15.4 expected 15.12.1 - cosmetic compatibility warning, app still works"}
+    ]
+  },
+  "test_report_links": ["/app/backend/tests/test_atypic.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [
+    "(Optional) Replace deprecated shadow* style props with boxShadow on web or use Platform.select to silence warnings.",
+    "(Optional) Pin react-native-svg to 15.12.1 to match installed Expo SDK expected version.",
+    "Note: The frontend capacity-exceeded UI flow was exercised but the chosen impacts (-50 on each axis from 85/60/75) did not actually exceed capacity (resulted in 35/10/25). The backend rule and Alert handler in /app/frontend/app/event/new.tsx (lines 107-115) are implemented correctly; backend pytest test_create_event_blocked_when_capacity_exceeded validates the 400 + French detail behavior."
+  ],
+  "critical_code_review_comments": [
+    "server.py is 370 lines and well-structured. All Mongo queries exclude _id via projection {'_id': 0}. Uses uuid for ids — good.",
+    "event creation does not validate impacts within [-100,100]; Pydantic models declare it as int with no bound. Low priority.",
+    "EXPO_PUBLIC_BACKEND_URL is read once at module load in lib/api.ts. OK for Expo.",
+    "Frontend uses TouchableOpacity, Text, View consistently and StyleSheet.create — compliant.",
+    "All interactive elements have testID — coverage is excellent."
+  ],
+  "updated_files": ["/app/backend/tests/test_atypic.py"],
+  "success_rate": {"backend": "100% (12/12)", "frontend": "100% of tested flows"},
+  "seed_data_creation": "Tests create events under year 2099 dates (auto-cleaned) and one '2026-05-09' event during UI test that was manually deleted post-test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "EXPO_PUBLIC_BACKEND_URL points to preview ingress. Pytest file at /app/backend/tests/test_atypic.py is reusable. Tab labels are 'Calendrier', 'Statistiques', 'Paramètres' (do not search for 'Settings'). Native Alert dialogs (Alert.alert) cannot be inspected via DOM on web preview — verify capacity-exceeded behavior via backend test or by listening to console / inspecting fact that modal stays open.",
+  "rca_of_issue": "No bugs found."
+}
