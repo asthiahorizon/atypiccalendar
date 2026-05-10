@@ -1,4 +1,15 @@
-const BASE = process.env.EXPO_PUBLIC_BACKEND_URL;
+import Constants from "expo-constants";
+
+const BASE =
+  process.env.EXPO_PUBLIC_BACKEND_URL ||
+  (Constants.expoConfig?.extra as any)?.backendUrl ||
+  (Constants.manifest2?.extra?.expoClient?.extra as any)?.backendUrl;
+
+if (!BASE) {
+  console.error(
+    "[api] EXPO_PUBLIC_BACKEND_URL is not defined and no extra.backendUrl fallback found"
+  );
+}
 
 const api = (path: string) => `${BASE}/api${path}`;
 
