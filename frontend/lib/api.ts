@@ -78,6 +78,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const apiClient = {
   getTemplates: () => request<Template[]>("/templates"),
+  eventsCount: () => request<{ count: number }>("/events/count"),
   listEvents: (start?: string, end?: string) => {
     const params = new URLSearchParams();
     if (start) params.set("start_date", start);

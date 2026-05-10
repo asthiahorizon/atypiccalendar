@@ -66,6 +66,42 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.premium_section}</Text>
+          <TouchableOpacity
+            style={styles.premiumCard}
+            activeOpacity={0.85}
+            onPress={() => router.push("/paywall")}
+            testID="setting-premium"
+          >
+            <View
+              style={[
+                styles.rowIcon,
+                { backgroundColor: "rgba(162, 136, 248, 0.18)" },
+              ]}
+            >
+              <Sparkles
+                size={18}
+                color={theme.colors.cognitive}
+                strokeWidth={1.7}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowTitle}>
+                {premium ? t.premium_active : t.premium_inactive}
+              </Text>
+              {!premium && (
+                <Text style={styles.rowDesc}>{t.upgrade_cta}</Text>
+              )}
+            </View>
+            {!premium && (
+              <View style={styles.premiumBadge}>
+                <Text style={styles.premiumBadgeText}>PRO</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.reserves_section}</Text>
           <View style={styles.card}>
             <ReserveRow
@@ -272,6 +308,28 @@ const styles = StyleSheet.create({
     lineHeight: 17,
   },
   rowValue: { color: theme.colors.textTertiary, fontSize: 13 },
+  premiumCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 20,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "rgba(162, 136, 248, 0.25)",
+  },
+  premiumBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 9999,
+    backgroundColor: theme.colors.text,
+  },
+  premiumBadgeText: {
+    color: theme.colors.bg,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
   divider: {
     height: 1,
     backgroundColor: theme.colors.border,

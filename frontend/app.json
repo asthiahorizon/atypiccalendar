@@ -10,7 +10,8 @@
     "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.atypic.calendar",
+      "bundleIdentifier": "com.asthiahorizon.atypiccalendar",
+      "deploymentTarget": "15.1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSAppTransportSecurity": {
@@ -33,7 +34,7 @@
       }
     },
     "android": {
-      "package": "com.atypic.calendar",
+      "package": "com.asthiahorizon.atypiccalendar",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000"
@@ -48,6 +49,15 @@
     },
     "plugins": [
       "expo-router",
+      "react-native-iap",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {

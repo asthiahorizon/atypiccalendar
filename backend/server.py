@@ -138,6 +138,12 @@ async def get_templates():
     return TEMPLATES
 
 
+@api_router.get("/events/count")
+async def events_count():
+    n = await db.events.count_documents({})
+    return {"count": n}
+
+
 @api_router.get("/events", response_model=List[Event])
 async def list_events(start_date: Optional[str] = None, end_date: Optional[str] = None):
     query = {}

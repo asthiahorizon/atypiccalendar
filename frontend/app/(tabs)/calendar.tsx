@@ -42,6 +42,11 @@ import { EventCard } from "../../components/EventCard";
 import { FatigueIndicator } from "../../components/FatigueIndicator";
 import { SuggestionCard } from "../../components/SuggestionCard";
 import { t, lang, sugByType } from "../../lib/i18n";
+import {
+  isFirstOpenPending,
+  markFirstOpenSeen,
+  getStatus,
+} from "../../lib/subscription";
 
 type ViewMode = "day" | "week" | "month";
 
@@ -117,6 +122,23 @@ export default function CalendarScreen() {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  // First-open paywall (info upsell, dismissible)
+  useEffect(() => {
+    (async () => {
+      try {
+        const sub = await getStatus();
+        if (sub.premium) return;
+        const pending = await isFirstOpenPending();
+        if (pending) {
+          await markFirstOpenSeen();
+          setTimeout(() => router.push("/paywall"), 600);
+        }
+      } catch (e) {
+        console.warn("first open check failed", e);
+      }
+    })();
+  }, [router]);
 
   const onRefresh = async () => {
     setRefreshing(true);

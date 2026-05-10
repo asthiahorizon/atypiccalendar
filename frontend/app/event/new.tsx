@@ -33,6 +33,10 @@ import {
   scheduleEventReminder,
   cancelEventReminder,
 } from "../../lib/notifications";
+import {
+  getStatus,
+  FREE_EVENT_LIMIT,
+} from "../../lib/subscription";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const STEP = 5;
@@ -124,6 +128,20 @@ export default function EventFormScreen() {
           console.warn("notif reschedule failed", notifErr);
         }
       } else {
+        // Free-tier limit check
+        const sub = await getStatus();
+        if (!sub.premium) {
+          try {
+            const cnt = await apiClient.eventsCount();
+            if (cnt.count >= FREE_EVENT_LIMIT) {
+              setSaving(false);
+              router.replace("/paywall");
+              return;
+            }
+          } catch (cntErr) {
+            console.warn("count failed", cntErr);
+          }
+        }
         const check = await apiClient.checkEvent(payload as any);
         if (check.blocked) {
           setSaving(false);
