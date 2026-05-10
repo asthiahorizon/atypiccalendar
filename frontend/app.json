@@ -1,22 +1,45 @@
 {
   "expo": {
-    "name": "frontend",
-    "slug": "frontend",
+    "name": "Atypic Calendar",
+    "slug": "atypic-calendar",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "frontend",
+    "scheme": "atypic",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.atypic.calendar",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSExceptionDomains": {
+            "preview.emergentagent.com": {
+              "NSIncludesSubdomains": true,
+              "NSThirdPartyExceptionAllowsInsecureHTTPLoads": true,
+              "NSThirdPartyExceptionRequiresForwardSecrecy": false,
+              "NSThirdPartyExceptionMinimumTLSVersion": "TLSv1.0"
+            },
+            "emergentagent.com": {
+              "NSIncludesSubdomains": true,
+              "NSThirdPartyExceptionAllowsInsecureHTTPLoads": true,
+              "NSThirdPartyExceptionRequiresForwardSecrecy": false,
+              "NSThirdPartyExceptionMinimumTLSVersion": "TLSv1.0"
+            }
+          }
+        }
+      }
     },
     "android": {
+      "package": "com.atypic.calendar",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#000"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",
@@ -32,6 +55,12 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#000"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#A288F8"
         }
       ]
     ],
