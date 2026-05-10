@@ -8,15 +8,19 @@ const MORNING_ID_KEY = "atypic.notifications.morningId";
 
 export const notificationsEnabledKey = ENABLED_KEY;
 
-// Set behavior so notifications show even in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
-});
+// Set behavior so notifications show even in foreground (best-effort)
+try {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+} catch (e) {
+  console.warn("setNotificationHandler unavailable", e);
+}
 
 const morningTitleByLang: Record<string, string> = {
   en: "Good morning",

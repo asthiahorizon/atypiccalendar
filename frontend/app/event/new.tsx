@@ -109,16 +109,20 @@ export default function EventFormScreen() {
     try {
       if (isEdit && editId) {
         await apiClient.updateEvent(editId, payload);
-        // Reschedule reminder
-        const oldRid = await AsyncStorage.getItem(reminderKey(editId));
-        if (oldRid) await cancelEventReminder(oldRid);
-        const newRid = await scheduleEventReminder({
-          title: payload.title,
-          date: payload.date,
-          time: payload.start_time,
-        });
-        if (newRid) await AsyncStorage.setItem(reminderKey(editId), newRid);
-        else await AsyncStorage.removeItem(reminderKey(editId));
+        // Reschedule reminder (notifications are best-effort)
+        try {
+          const oldRid = await AsyncStorage.getItem(reminderKey(editId));
+          if (oldRid) await cancelEventReminder(oldRid);
+          const newRid = await scheduleEventReminder({
+            title: payload.title,
+            date: payload.date,
+            time: payload.start_time,
+          });
+          if (newRid) await AsyncStorage.setItem(reminderKey(editId), newRid);
+          else await AsyncStorage.removeItem(reminderKey(editId));
+        } catch (notifErr) {
+          console.warn("notif reschedule failed", notifErr);
+        }
       } else {
         const check = await apiClient.checkEvent(payload as any);
         if (check.blocked) {
@@ -129,16 +133,22 @@ export default function EventFormScreen() {
           return;
         }
         const created = await apiClient.createEvent(payload as any);
-        const rid = await scheduleEventReminder({
-          title: created.title,
-          date: created.date,
-          time: created.start_time,
-        });
-        if (rid) await AsyncStorage.setItem(reminderKey(created.id), rid);
+        // Notifications best-effort
+        try {
+          const rid = await scheduleEventReminder({
+            title: created.title,
+            date: created.date,
+            time: created.start_time,
+          });
+          if (rid) await AsyncStorage.setItem(reminderKey(created.id), rid);
+        } catch (notifErr) {
+          console.warn("notif schedule failed", notifErr);
+        }
       }
       router.back();
     } catch (e: any) {
       setSaving(false);
+      console.error("save event failed", e);
       Alert.alert(t.err_cant_add, e?.message || t.err_unexpected);
     }
   };
