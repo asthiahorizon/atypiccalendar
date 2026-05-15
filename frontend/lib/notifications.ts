@@ -35,10 +35,10 @@ const morningBodyByLang: Record<string, string> = {
   de: "Deine drei Reserven sind voll. Pass heute gut auf dich auf.",
 };
 const reminderTitleByLang: Record<string, string> = {
-  en: "Coming up in 15 min",
-  fr: "Dans 15 min",
-  it: "Tra 15 minuti",
-  de: "In 15 Minuten",
+  en: "In {m} min",
+  fr: "Dans {m} min",
+  it: "Tra {m} minuti",
+  de: "In {m} Min",
 };
 
 export async function ensurePermission(): Promise<boolean> {
@@ -93,28 +93,34 @@ export async function cancelAll() {
 }
 
 /**
- * Schedule a 15-min-before reminder for an event.
+ * Schedule a reminder for an event at `minutesBefore` minutes before the start time.
  * Returns notification id (or null if skipped).
  */
 export async function scheduleEventReminder(opts: {
   title: string;
   date: string; // YYYY-MM-DD
   time: string; // HH:MM
+  minutesBefore: number;
 }): Promise<string | null> {
   if (Platform.OS === "web") return null;
-  const enabled = await isEnabled();
-  if (!enabled) return null;
+  if (!opts.minutesBefore || opts.minutesBefore <= 0) return null;
+  const granted = await ensurePermission();
+  if (!granted) return null;
   const [y, m, d] = opts.date.split("-").map(Number);
   const [hh, mm] = opts.time.split(":").map(Number);
   const dt = new Date(y, m - 1, d, hh, mm);
-  const fireAt = new Date(dt.getTime() - 15 * 60 * 1000);
+  const fireAt = new Date(dt.getTime() - opts.minutesBefore * 60 * 1000);
   if (fireAt.getTime() <= Date.now() + 30 * 1000) {
-    return null; // event in past or too close
+    return null; // in the past or too close
   }
   try {
     const id = await Notifications.scheduleNotificationAsync({
       content: {
-        title: reminderTitleByLang[lang] || reminderTitleByLang.en,
+        title:
+          (reminderTitleByLang[lang] || reminderTitleByLang.en).replace(
+            "{m}",
+            String(opts.minutesBefore)
+          ),
         body: opts.title,
       },
       trigger: {

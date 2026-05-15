@@ -32,6 +32,7 @@ class EventBase(BaseModel):
     cognitive_impact: int = 0  # -100..100
     social_impact: int = 0
     sensory_impact: int = 0
+    reminder_minutes: int = 0  # 0 = no reminder, otherwise minutes before start
     note: Optional[str] = None
     template_id: Optional[str] = None
 
@@ -54,6 +55,7 @@ class EventUpdate(BaseModel):
     cognitive_impact: Optional[int] = None
     social_impact: Optional[int] = None
     sensory_impact: Optional[int] = None
+    reminder_minutes: Optional[int] = None
     note: Optional[str] = None
 
 

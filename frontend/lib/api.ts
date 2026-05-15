@@ -25,6 +25,7 @@ export interface AtypicEvent {
   cognitive_impact: number;
   social_impact: number;
   sensory_impact: number;
+  reminder_minutes: number;
   note?: string | null;
   template_id?: string | null;
   created_at?: string;

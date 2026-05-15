@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Switch,
   Alert,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -16,9 +14,9 @@ import {
   Zap,
   Info,
   HeartHandshake,
-  Bell,
   Moon,
   Globe,
+  Sparkles,
 } from "lucide-react-native";
 import { theme } from "../../lib/theme";
 import { t } from "../../lib/i18n";
@@ -38,18 +36,6 @@ export default function SettingsScreen() {
       setNotifLoading(false);
     });
   }, []);
-
-  const onToggleNotif = async (value: boolean) => {
-    if (value) {
-      const granted = await ensurePermission();
-      if (!granted) {
-        Alert.alert(t.notif_perm_denied_t, t.notif_perm_denied_m);
-        return;
-      }
-    }
-    setNotifOn(value);
-    await setEnabled(value);
-  };
 
   const onAbout = () => Alert.alert(t.about_title, t.about_body);
   const onEngagement = () => Alert.alert(t.engagement_title, t.engagement_body);
@@ -130,16 +116,6 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t.app_section}</Text>
           <View style={styles.card}>
-            <ToggleRow
-              Icon={Bell}
-              title={t.setting_notifications}
-              desc={t.notif_toggle_desc}
-              value={notifOn}
-              loading={notifLoading}
-              onChange={onToggleNotif}
-              testID="setting-notifications-toggle"
-            />
-            <View style={styles.divider} />
             <Row
               Icon={Moon}
               title={t.setting_theme}
@@ -222,38 +198,8 @@ const Row: React.FC<{
   </TouchableOpacity>
 );
 
-const ToggleRow: React.FC<{
-  Icon: any;
-  title: string;
-  desc: string;
-  value: boolean;
-  loading: boolean;
-  onChange: (v: boolean) => void;
-  testID?: string;
-}> = ({ Icon, title, desc, value, loading, onChange, testID }) => (
-  <View style={styles.row}>
-    <View
-      style={[styles.rowIcon, { backgroundColor: theme.colors.surfaceElevated }]}
-    >
-      <Icon size={16} color={theme.colors.textSecondary} strokeWidth={1.7} />
-    </View>
-    <View style={{ flex: 1 }}>
-      <Text style={styles.rowTitle}>{title}</Text>
-      <Text style={styles.rowDesc}>{desc}</Text>
-    </View>
-    <Switch
-      value={value}
-      onValueChange={onChange}
-      disabled={loading}
-      trackColor={{
-        false: "rgba(255,255,255,0.08)",
-        true: theme.colors.cognitive,
-      }}
-      thumbColor={Platform.OS === "android" ? theme.colors.text : undefined}
-      testID={testID}
-    />
-  </View>
-);
+const ToggleRow_REMOVED = () => null;
+void ToggleRow_REMOVED;
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.colors.bg },

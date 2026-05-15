@@ -318,6 +318,10 @@ const en: Dict = {
   premium_active: "Premium active",
   premium_inactive: "Free plan",
   upgrade_cta: "Upgrade",
+  reminder_label: "Reminder",
+  reminder_none: "None",
+  reminder_min: "min before",
+  reminder_hour: "h before",
 };
 
 const fr: Dict = {
@@ -486,6 +490,10 @@ const fr: Dict = {
   premium_active: "Premium actif",
   premium_inactive: "Plan gratuit",
   upgrade_cta: "Passer à Premium",
+  reminder_label: "Rappel",
+  reminder_none: "Aucun",
+  reminder_min: "min avant",
+  reminder_hour: "h avant",
 };
 
 const it: Dict = {
@@ -654,6 +662,10 @@ const it: Dict = {
   premium_active: "Premium attivo",
   premium_inactive: "Piano gratuito",
   upgrade_cta: "Passa a Premium",
+  reminder_label: "Promemoria",
+  reminder_none: "Nessuno",
+  reminder_min: "min prima",
+  reminder_hour: "h prima",
 };
 
 const de: Dict = {
@@ -823,6 +835,10 @@ const de: Dict = {
   premium_active: "Premium aktiv",
   premium_inactive: "Gratis-Plan",
   upgrade_cta: "Upgrade",
+  reminder_label: "Erinnerung",
+  reminder_none: "Keine",
+  reminder_min: "Min vorher",
+  reminder_hour: "Std vorher",
 };
 
 const dictionaries: Record<Lang, Dict> = { en, fr, it, de };

@@ -59,6 +59,7 @@ export default function EventFormScreen() {
   const [cogMag, setCogMag] = useState(15);
   const [socMag, setSocMag] = useState(0);
   const [senMag, setSenMag] = useState(0);
+  const [reminderMin, setReminderMin] = useState(0);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(isEdit);
 
@@ -78,6 +79,7 @@ export default function EventFormScreen() {
           setCogMag(Math.abs(ev.cognitive_impact));
           setSocMag(Math.abs(ev.social_impact));
           setSenMag(Math.abs(ev.sensory_impact));
+          setReminderMin(ev.reminder_minutes || 0);
         }
       } catch (e) {
         console.warn("load event failed", e);
@@ -121,6 +123,7 @@ export default function EventFormScreen() {
             title: payload.title,
             date: payload.date,
             time: payload.start_time,
+            minutesBefore: payload.reminder_minutes,
           });
           if (newRid) await AsyncStorage.setItem(reminderKey(editId), newRid);
           else await AsyncStorage.removeItem(reminderKey(editId));
@@ -157,6 +160,7 @@ export default function EventFormScreen() {
             title: created.title,
             date: created.date,
             time: created.start_time,
+            minutesBefore: created.reminder_minutes,
           });
           if (rid) await AsyncStorage.setItem(reminderKey(created.id), rid);
         } catch (notifErr) {
@@ -343,6 +347,49 @@ export default function EventFormScreen() {
                 sign={sign}
                 testID="impact-sensory"
               />
+            </View>
+
+            <View>
+              <Text style={styles.label}>{t.reminder_label}</Text>
+              <View style={styles.reminderRow}>
+                {[0, 15, 30, 45, 60, 90, 120].map((m) => {
+                  const active = reminderMin === m;
+                  const label =
+                    m === 0
+                      ? t.reminder_none
+                      : m < 60
+                      ? `${m} ${t.reminder_min}`
+                      : m === 60
+                      ? `1 ${t.reminder_hour}`
+                      : m === 90
+                      ? `1h30 ${t.reminder_min}`
+                      : `2 ${t.reminder_hour}`;
+                  return (
+                    <TouchableOpacity
+                      key={m}
+                      style={[
+                        styles.reminderChip,
+                        active && {
+                          borderColor: theme.colors.cognitive,
+                          backgroundColor: "rgba(162,136,248,0.15)",
+                        },
+                      ]}
+                      onPress={() => setReminderMin(m)}
+                      activeOpacity={0.85}
+                      testID={`reminder-${m}`}
+                    >
+                      <Text
+                        style={[
+                          styles.reminderChipText,
+                          active && { color: theme.colors.cognitive },
+                        ]}
+                      >
+                        {label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
 
             {isEdit && (
@@ -592,6 +639,24 @@ const styles = StyleSheet.create({
   scaleText: {
     color: theme.colors.textTertiary,
     fontSize: 10,
+    fontWeight: "600",
+  },
+  reminderRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  reminderChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 9999,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  reminderChipText: {
+    color: theme.colors.textSecondary,
+    fontSize: 12,
     fontWeight: "600",
   },
   deleteBtn: {
