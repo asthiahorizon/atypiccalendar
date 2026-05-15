@@ -8,6 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect, useRouter } from "expo-router";
 import {
   Brain,
   Users,
@@ -20,22 +21,17 @@ import {
 } from "lucide-react-native";
 import { theme } from "../../lib/theme";
 import { t } from "../../lib/i18n";
-import {
-  ensurePermission,
-  isEnabled,
-  setEnabled,
-} from "../../lib/notifications";
+import { getStatus } from "../../lib/subscription";
 
 export default function SettingsScreen() {
-  const [notifOn, setNotifOn] = useState(false);
-  const [notifLoading, setNotifLoading] = useState(true);
+  const router = useRouter();
+  const [premium, setPremium] = useState(false);
 
-  useEffect(() => {
-    isEnabled().then((v) => {
-      setNotifOn(v);
-      setNotifLoading(false);
-    });
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      getStatus().then((s) => setPremium(s.premium));
+    }, [])
+  );
 
   const onAbout = () => Alert.alert(t.about_title, t.about_body);
   const onEngagement = () => Alert.alert(t.engagement_title, t.engagement_body);
